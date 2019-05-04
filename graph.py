@@ -35,7 +35,7 @@ def replace_name(names, old, new):
     return new_names
 
 def main():
-    csv_reader = csv.reader(open("Computer_Smartphone_tablet_markethshare_1975-2012.csv"))
+    csv_reader = csv.reader(open("data.csv"))
 
     header = csv_reader.__next__()
     header = splice_columns(header)
