@@ -8,6 +8,8 @@ var RIGHT_MARGIN = 20;
 var FRAMES_PER_YEAR = 60;
 
 var canvas = document.getElementById("graph");
+canvas.width = 800;
+canvas.height = TOP_MARGIN + COMPUTER_COUNT*(BAR_HEIGHT + BAR_SPACING) - BAR_SPACING;
 var ctx = canvas.getContext("2d");
 var yearSelector = document.getElementById("yearSelector");
 yearSelector.min = gYears[0];
