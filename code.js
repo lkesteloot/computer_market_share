@@ -18,6 +18,26 @@ yearSelector.value = gYears[0];
 
 var frame = 0;
 
+// https://stackoverflow.com/a/17243070/211234
+function hsvToRgb(h, s, v) {
+    var r, g, b, i, f, p, q, t;
+    i = Math.floor(h * 6);
+    f = h * 6 - i;
+    p = v * (1 - s);
+    q = v * (1 - f * s);
+    t = v * (1 - (1 - f) * s);
+    switch (i % 6) {
+        case 0: r = v, g = t, b = p; break;
+        case 1: r = q, g = v, b = p; break;
+        case 2: r = p, g = v, b = t; break;
+        case 3: r = p, g = q, b = v; break;
+        case 4: r = t, g = p, b = v; break;
+        case 5: r = v, g = p, b = q; break;
+    }
+    return "rgb(" + Math.round(r * 255) + "," + Math.round(g * 255) + "," + Math.round(b * 255) + ")";
+}
+
+// Lerp between arrays u1 and u2 according to t.
 var lerp = function(u1, u2, t) {
     if (t == 0) {
         // Don't read u2 if t is zero, u2 might be undefined.
@@ -31,6 +51,11 @@ var lerp = function(u1, u2, t) {
 
         return u;
     }
+};
+
+// Return a color for a computer index.
+var colorForComputer = function(i) {
+    return hsvToRgb((COMPUTER_COUNT - 1 - i)/COMPUTER_COUNT, 1, .8);
 };
 
 var graphUnits = function(ctx, year, values) {
@@ -57,6 +82,7 @@ var graphUnits = function(ctx, year, values) {
         let minorGridGray = 128 + majorGray;
         let majorColor = "rgb(" + majorGray + "," + majorGray + "," + majorGray + ")";
         let minorGridColor = "rgb(" + minorGridGray + "," + minorGridGray + "," + minorGridGray + ")";
+	// Dim labels earlier or they clash.
         let minorLabelGray = Math.min(128 + majorGray*2, 255);
         let minorLabelColor = "rgb(" + minorLabelGray + "," + minorLabelGray + "," + minorLabelGray + ")";
 
@@ -113,17 +139,21 @@ var graphUnits = function(ctx, year, values) {
             ctx.fillText(gComputerNames[i], (canvas.width - RIGHT_MARGIN)/2, y + BAR_HEIGHT/2);
         };
 
-        ctx.fillStyle = "#000000";
+	// Text over background.
+        ctx.fillStyle = colorForComputer(i);
         drawLabel();
 
         ctx.save();
+            // Clipping path for bar.
             ctx.beginPath();
             ctx.rect(0, y, width, BAR_HEIGHT);
             ctx.clip();
 
-            ctx.fillStyle = "rgb(200, 0, 0)";
+            // Bar itself.
+            ctx.fillStyle = colorForComputer(i);
             ctx.fillRect(0, 0, canvas.width, canvas.height);
 
+            // Text over bar.
             ctx.fillStyle = "#ffffff";
             drawLabel();
         ctx.restore();

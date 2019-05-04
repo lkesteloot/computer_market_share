@@ -58,9 +58,9 @@ def main():
     header = csv_reader.__next__()
     header = splice_columns(header)
     header = replace_name(header, "IBM PC + clones", "PC")
-    header = replace_name(header, "Atari 400/800", "Atari")
-    header = replace_name(header, "Commodore 64", "C64")
-    header = replace_name(header, "Smartphones", "Phones")
+    # header = replace_name(header, "Atari 400/800", "Atari")
+    # header = replace_name(header, "Commodore 64", "C64")
+    # header = replace_name(header, "Smartphones", "Phones")
     header[-1] = "Tablets"
 
     # Load the data.
