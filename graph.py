@@ -2,30 +2,28 @@
 import sys
 import csv
 
+# Pick the columns we want out of the CSV file.
 def splice_columns(columns):
     return columns[:11] + columns[12:13] + columns[34:36]
 
-def dump_data(header, data):
-    sys.stdout.write("{0:5}".format(header[0]))
+# Dump the table.
+def dump_data(out, header, data):
+    out.write("{0:5}".format(header[0]))
     for name in header[1:]:
-        sys.stdout.write("{0:>10}".format(name))
-    sys.stdout.write("\n")
+        out.write("{0:>10}".format(name))
+    out.write("\n")
 
     for values in data:
-        sys.stdout.write(str(values[0]) + " ")
+        out.write(str(values[0]) + " ")
         for value in values[1:]:
-            sys.stdout.write("{0:10}".format(value))
-        sys.stdout.write("\n")
+            out.write("{0:10}".format(value))
+        out.write("\n")
 
+# Rearranges the column order.
 def rearrange(columns, order):
-    # Keep year at the front.
-    new_columns = [columns[0]]
+    return [columns[i] for i in [0] + order]
 
-    for i in order:
-        new_columns.append(columns[i])
-
-    return new_columns
-
+# Replaces the entry in names.
 def replace_name(names, old, new):
     new_names = [new if name == old else name for name in names]
     if new_names == names:
@@ -53,7 +51,7 @@ def main():
         data.append(values)
 
     # Find the good order for the columns. Primary sort is the initial release date.
-    # Secondary sort is (reverse) death date, so we can get rid of computers sooner.
+    # Secondary sort is death date, so we can get rid of computers sooner.
     #
     # Each element of order is (birth,death,column) tuple.
     order = []
@@ -73,7 +71,7 @@ def main():
     header = rearrange(header, order)
     data = [rearrange(values, order) for values in data]
 
-    dump_data(header, data)
+    dump_data(sys.stdout, header, data)
 
 if __name__ == "__main__":
     if sys.version_info.major != 3:
