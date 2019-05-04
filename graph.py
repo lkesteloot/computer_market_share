@@ -19,6 +19,26 @@ def dump_data(out, header, data):
             out.write("{0:10}".format(value))
         out.write("\n")
 
+# Dump the table as JavaScript.
+def dump_js_data(out, header, data):
+    out.write("var gComputerNames = [ ")
+    for name in header[1:]:
+        out.write("\"{0}\", ".format(name))
+    out.write("];\n")
+
+    out.write("var gYears = [ ")
+    for values in data:
+        out.write("{0}, ".format(values[0]))
+    out.write("];\n")
+
+    out.write("var gData = [\n")
+    for values in data:
+        out.write("    [ ")
+        for value in values[1:]:
+            out.write("{0}, ".format(value))
+        out.write("],\n")
+    out.write("];\n")
+
 # Rearranges the column order.
 def rearrange(columns, order):
     return [columns[i] for i in [0] + order]
@@ -47,7 +67,7 @@ def main():
     data = []
     for values in csv_reader:
         values = splice_columns(values)
-        values = values[:1] + [int(float(v)*1000) if v != "" else 0 for v in values[1:]]
+        values = [int(values[0])] + [int(float(v)*1000) if v != "" else 0 for v in values[1:]]
         data.append(values)
 
     # Find the good order for the columns. Primary sort is the initial release date.
@@ -71,7 +91,13 @@ def main():
     header = rearrange(header, order)
     data = [rearrange(values, order) for values in data]
 
+    # Insert blank row first so animation looks smooth.
+    data = [[data[0][0] - 1] + [0]*(len(data[0]) - 1)] + data
+
     dump_data(sys.stdout, header, data)
+    f = open("data.js", "w")
+    dump_js_data(f, header, data)
+    f.close()
 
 if __name__ == "__main__":
     if sys.version_info.major != 3:
