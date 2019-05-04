@@ -110,7 +110,14 @@ var graphUnits = function(ctx, year, values) {
     }
 };
 
+var userIsAdjusting = false;
+
+// Animation callback.
 var update = function() {
+    if (userIsAdjusting) {
+        return;
+    }
+
     var row = Math.floor(frame/FPS);
     var t = frame%FPS/FPS;
     var values = lerp(gData[row], gData[row + 1], t);
@@ -122,5 +129,16 @@ var update = function() {
     window.requestAnimationFrame(update);
 };
 
+// Start the animation process.
 update();
+
+// Let the user set the year.
+yearSelector.addEventListener("input", function() {
+    userIsAdjusting = true;
+    var year = parseInt(yearSelector.value);
+    var row = gYears.indexOf(year);
+    if (row !== -1) {
+        graphUnits(ctx, year, gData[row]);
+    }
+});
 
