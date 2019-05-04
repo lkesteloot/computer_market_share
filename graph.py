@@ -52,19 +52,33 @@ def main():
         values = values[:1] + [int(float(v)*1000) if v != "" else 0 for v in values[1:]]
         data.append(values)
 
-    # Sort the data by first release.
-    unreleased = set(range(1, len(header)))
+    # Find the good order for the columns. Primary sort is the initial release date.
+    # Secondary sort is (reverse) death date, so we can get rid of computers sooner.
+    #
+    # Each element of order is (birth,death,column) tuple.
     order = []
-    for values in data:
-        for i in range(1, len(values)):
-            if i in unreleased and values[i] != 0:
-                order.append(i)
-                unreleased.remove(i)
+    for column in range(1, len(header)):
+        birth = None
+        death = None
+        for row in range(len(data)):
+            if data[row][column] != 0:
+                if birth is None:
+                    birth = row
+                death = row
+        order.append( (birth, death, column) )
+    order.sort()
+    order = [column for (birth, death, column) in order]
+
+    # Rearrange the columns.
     header = rearrange(header, order)
     data = [rearrange(values, order) for values in data]
 
     dump_data(header, data)
 
 if __name__ == "__main__":
+    if sys.version_info.major != 3:
+        sys.stderr.write("Must run with Python 3.\n")
+        sys.exit(1)
+
     main()
 
