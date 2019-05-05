@@ -6,6 +6,7 @@ var BAR_SPACING = 20;
 var TOP_MARGIN = 30;
 var RIGHT_MARGIN = 20;
 var FRAMES_PER_YEAR = 60;
+var MAX_FRAME = (YEAR_COUNT - 1)*FRAMES_PER_YEAR;
 
 var canvas = document.getElementById("graph");
 canvas.width = 800;
@@ -19,7 +20,7 @@ yearSelector.value = gYears[0];
 var frame = 0;
 
 // https://stackoverflow.com/a/17243070/211234
-function hsvToRgb(h, s, v) {
+var hsvToRgb = function(h, s, v) {
     var r, g, b, i, f, p, q, t;
     i = Math.floor(h * 6);
     f = h * 6 - i;
@@ -35,7 +36,7 @@ function hsvToRgb(h, s, v) {
         case 5: r = v, g = p, b = q; break;
     }
     return "rgb(" + Math.round(r * 255) + "," + Math.round(g * 255) + "," + Math.round(b * 255) + ")";
-}
+};
 
 // Lerp between arrays u1 and u2 according to t.
 var lerp = function(u1, u2, t) {
@@ -58,16 +59,12 @@ var colorForComputer = function(i) {
     return hsvToRgb((COMPUTER_COUNT - 1 - i)/COMPUTER_COUNT, 1, .8);
 };
 
-var graphUnits = function(ctx, year, values) {
+var graphUnits = function(ctx, year, values, maxUnits) {
     // Clear canvas.
     ctx.fillStyle = "#ffffff";
     ctx.fillRect(0, 0, canvas.width, canvas.height);
 
-    // Figure out max sales.
-    var maxUnits = 0;
-    for (var i = 0; i < COMPUTER_COUNT; i++) {
-        maxUnits = Math.max(maxUnits, values[i]);
-    }
+    // Figure out scale.
     var unitsPerPixel = maxUnits/(canvas.width - RIGHT_MARGIN);
 
     if (maxUnits > 0) {
@@ -167,6 +164,29 @@ var graphUnits = function(ctx, year, values) {
     ctx.fillText(year, (canvas.width - RIGHT_MARGIN)/2, TOP_MARGIN + (canvas.height - TOP_MARGIN)/2);
 };
 
+// Return the max value in the specified array.
+var getMaxUnits = function(values) {
+    var maxUnits = 0;
+    for (var i = 0; i < values.length; i++) {
+        maxUnits = Math.max(maxUnits, values[i]);
+    }
+    return maxUnits;
+};
+
+// Compute values for a given frame.
+var getFrameInfo = function(frame) {
+    frame = Math.min(frame, MAX_FRAME);
+    var row = Math.floor(frame/FRAMES_PER_YEAR);
+    var t = frame%FRAMES_PER_YEAR/FRAMES_PER_YEAR;
+    var values = lerp(gData[row], gData[row + 1], t);
+
+    return {
+        row: row,
+        t: t,
+        values: values,
+    };
+};
+
 var userIsAdjusting = false;
 
 // Animation callback.
@@ -175,12 +195,17 @@ var update = function() {
         return;
     }
 
-    var row = Math.floor(frame/FRAMES_PER_YEAR);
-    var t = frame%FRAMES_PER_YEAR/FRAMES_PER_YEAR;
-    var values = lerp(gData[row], gData[row + 1], t);
-    yearSelector.value = gYears[row];
-    graphUnits(ctx, gYears[row], values);
-    if (frame < (YEAR_COUNT - 1)*FRAMES_PER_YEAR) {
+    // Compute the max units by looking a bit ahead in time, so we can
+    // anticipate jumps.
+    info = getFrameInfo(frame);
+    nextInfo = getFrameInfo(frame + Math.floor(FRAMES_PER_YEAR/4));
+    infoMax = getMaxUnits(info.values);
+    nextInfoMax = getMaxUnits(nextInfo.values);
+    maxUnits = Math.max(infoMax, nextInfoMax);
+
+    yearSelector.value = gYears[info.row];
+    graphUnits(ctx, gYears[info.row], info.values, maxUnits);
+    if (frame < MAX_FRAME) {
         frame += 1;
     }
     window.requestAnimationFrame(update);
@@ -195,7 +220,7 @@ yearSelector.addEventListener("input", function() {
     var year = parseInt(yearSelector.value);
     var row = gYears.indexOf(year);
     if (row !== -1) {
-        graphUnits(ctx, year, gData[row]);
+        graphUnits(ctx, year, gData[row], getMaxUnits(gData[row]));
     }
 });
 
