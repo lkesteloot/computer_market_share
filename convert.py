@@ -1,4 +1,8 @@
 
+# Converts the CSV file into a JavaScript file we can import and use.
+# Gets rid of columns we don't want, clean up the data, and sort
+# computers by first use.
+
 import sys
 import csv
 
@@ -94,7 +98,7 @@ def main():
     # Insert blank row first so animation looks smooth.
     data = [[data[0][0] - 1] + [0]*(len(data[0]) - 1)] + data
 
-    dump_data(sys.stdout, header, data)
+    # dump_data(sys.stdout, header, data)
     f = open("data.js", "w")
     dump_js_data(f, header, data)
     f.close()

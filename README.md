@@ -3,9 +3,12 @@ Graphs market share of early computers.
 
 Raw data is from [Jeremy Reimer's blog](http://jeremyreimer.com/m-item.lsp?i=137).
 
-Run with:
+Convert CSV file to JavaScript data:
 
-    python3 graph.py
+    python3 convert.py
+
+Then open `index.html` file in a browser.
+Or [browse live version](https://lkesteloot.github.io/computer_market_share/).
 
 # License
 
