@@ -3,3 +3,10 @@
     display: block;
     width: 800px;
 }
+
+p.source {
+    font-family: sans-serif;
+    font-size: 10px;
+    width: 800px;
+    text-align: center;
+}
